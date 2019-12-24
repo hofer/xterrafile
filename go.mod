@@ -3,47 +3,32 @@ module github.com/devopsmakers/xterrafile
 go 1.13
 
 require (
-	cloud.google.com/go v0.46.3
 	cloud.google.com/go/storage v1.4.0 // indirect
+	github.com/Azure/azure-sdk-for-go v37.2.0+incompatible
 	github.com/Azure/azure-storage-blob-go v0.8.0
-	github.com/BurntSushi/toml v0.3.1
-	github.com/aws/aws-sdk-go v1.25.6
-	github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d
+	github.com/Azure/go-autorest v13.3.0+incompatible
+	github.com/Azure/go-autorest/autorest/azure/auth v0.4.2
+	github.com/Azure/go-autorest/autorest/validation v0.2.0 // indirect
+	github.com/aws/aws-sdk-go v1.25.6 // indirect
 	github.com/blang/semver v3.5.1+incompatible
-	github.com/davecgh/go-spew v1.1.1
-	github.com/golang/groupcache v0.0.0-20191002201903-404acd9df4cc
-	github.com/golang/protobuf v1.3.2
+	github.com/golang/groupcache v0.0.0-20191002201903-404acd9df4cc // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.1
 	github.com/hashicorp/go-getter v1.4.0
-	github.com/hashicorp/go-safetemp v1.0.0
-	github.com/hashicorp/go-version v1.2.0
+	github.com/hashicorp/go-version v1.2.0 // indirect
 	github.com/hashicorp/terraform v0.12.9
-	github.com/inconshreveable/mousetrap v1.0.0
-	github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af
-	github.com/jstemmer/go-junit-report v0.9.1
-	github.com/mitchellh/go-homedir v1.1.0
-	github.com/mitchellh/go-testing-interface v1.0.0
+	github.com/jstemmer/go-junit-report v0.9.1 // indirect
 	github.com/otiai10/copy v1.0.2
-	github.com/pmezard/go-difflib v1.0.0
 	github.com/rendon/testcli v0.0.0-20161027181003-6283090d169f
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/jwalterweatherman v1.1.0
-	github.com/spf13/pflag v1.0.5
+	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/stretchr/testify v1.4.0
-	github.com/ulikunitz/xz v0.5.6
-	github.com/zclconf/go-cty v1.1.0
-	go.opencensus.io v0.22.1
-	golang.org/x/exp v0.0.0-20191030013958-a1ab85dbe136
-	golang.org/x/lint v0.0.0-20190930215403-16217165b5de
-	golang.org/x/net v0.0.0-20191003171128-d98b1b443823
-	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
-	golang.org/x/sys v0.0.0-20191003212358-c178f38b412c
-	golang.org/x/text v0.3.2
-	golang.org/x/tools v0.0.0-20191115202509-3a792d9c32b2
-	google.golang.org/api v0.14.0
-	google.golang.org/appengine v1.6.4
-	google.golang.org/genproto v0.0.0-20191115194625-c23dd37a84c9
-	google.golang.org/grpc v1.24.0
+	github.com/ulikunitz/xz v0.5.6 // indirect
+	github.com/zclconf/go-cty v1.1.0 // indirect
+	go.opencensus.io v0.22.1 // indirect
+	golang.org/x/net v0.0.0-20191003171128-d98b1b443823 // indirect
+	golang.org/x/sys v0.0.0-20191003212358-c178f38b412c // indirect
+	google.golang.org/appengine v1.6.4 // indirect
+	google.golang.org/grpc v1.24.0 // indirect
 	gopkg.in/yaml.v2 v2.2.4
-	honnef.co/go/tools v0.0.1-2019.2.3
 )

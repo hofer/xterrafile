@@ -5,44 +5,63 @@ import (
 	"compress/gzip"
 	"context"
 	"fmt"
+	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2017-06-01/storage"
+	"github.com/Azure/azure-storage-blob-go/azblob"
+	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"io"
 	"log"
 	"net/url"
 	"os"
-	"github.com/Azure/azure-storage-blob-go/azblob"
 	"path/filepath"
 	"strings"
 )
 
 func IsAzBlobAStorageUrl(addr string) bool {
-	return strings.Contains(addr, "blob.core.windows.net") && strings.HasSuffix(addr, ".tgz")
+	return strings.Contains(addr, "blob.core.windows.net")
 }
 
 func CopyBlobContent(name string, source string, version string, directory string) {
-	DownloadBlob(source, directory)
+	DownloadBlob(name, source, version, directory)
 }
 
-func DownloadBlob(source string, targetDir string) {
+func DownloadBlob(name string, source string, version string, targetDir string) {
 
-	// TODO: get access key
+	subscriptionId := os.Getenv("STORAGE_ACCOUNT_SUBSCRIPTION_ID")
+	resourceGroupName := os.Getenv("STORAGE_ACCOUNT_RESOURCE_GROUP")
+	storageAccountName := os.Getenv("STORAGE_ACCOUNT_NAME")
+	var accountKey = ""
 
-	// https://terraformmodulesst.blob.core.windows.net/cip-gitlab-runner-iaclib/cip-gitlab-runner-iaclib_0.0.62.tgz
-	accountName, accountKey := os.Getenv("AZURE_STORAGE_ACCOUNT"), os.Getenv("AZURE_STORAGE_ACCESS_KEY")
-	if len(accountName) == 0 || len(accountKey) == 0 {
-		log.Fatal("Either the AZURE_STORAGE_ACCOUNT or AZURE_STORAGE_ACCESS_KEY environment variable is not set")
-	}
+	storageAccountsClient := getStorageAccountsClient(subscriptionId)
+	keys, err := storageAccountsClient.ListKeys(context.Background(), resourceGroupName, storageAccountName)
 
-	credential, err := azblob.NewSharedKeyCredential(accountName, accountKey)
+	key := (*keys.Keys)[0]
+	accountKey = *key.Value
+	//
+	//for _, key := range *keys.Keys {
+	//	fmt.Printf("\tKey name: %s\n\tValue: %s...\n\tPermissions: %s\n",
+	//		*key.KeyName,
+	//		(*key.Value)[:5],
+	//		key.Permissions)
+	//	fmt.Println("\t----------------")
+	//	accountKey = *key.Value
+	//}
+
+	downloadUrl := source + "/" + name + "_" + version + ".tar"
+
+	credential, err := azblob.NewSharedKeyCredential(storageAccountName, accountKey)
 	if err != nil {
 		log.Fatal("Invalid credentials with error: " + err.Error())
 	}
 	p := azblob.NewPipeline(credential, azblob.PipelineOptions{})
 
 	ctx := context.Background()
-	URL, _ := url.Parse(source)
+	URL, _ := url.Parse(downloadUrl)
 	blobURL := azblob.NewBlockBlobURL(*URL, p)
 
 	downloadResponse, err := blobURL.Download(ctx, 0, azblob.CountToEnd, azblob.BlobAccessConditions{}, false)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 
 	reader := downloadResponse.Body(azblob.RetryReaderOptions{})
 	r, err := gzip.NewReader(reader)
@@ -80,4 +99,20 @@ func untar(tarReader *tar.Reader, target string) error {
 		}
 	}
 	return nil
+}
+
+func getStorageAccountsClient(subscriptionId string) storage.AccountsClient {
+	storageAccountsClient := storage.NewAccountsClient(subscriptionId)
+	//authorizer, _ := auth.NewAuthorizerFromFile()
+	//authorizer, _ := auth.NewAuthorizerFromEnvironment()
+	authorizer, err := auth.NewAuthorizerFromCLI()
+
+	if err != nil {
+		log.Fatal("No authorization via CLI: " + err.Error())
+	}
+	//authorizer.WithAuthorization()
+    //auth, _ := iam.GetResourceManagementAuthorizer()
+	storageAccountsClient.Authorizer = authorizer
+	storageAccountsClient.AddToUserAgent("xterrafile")
+	return storageAccountsClient
 }

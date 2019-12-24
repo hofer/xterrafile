@@ -77,7 +77,7 @@ func getModule(moduleName string, moduleMeta module, wg *sync.WaitGroup) {
 
 	switch {
 	case xt.IsAzBlobAStorageUrl(moduleSource):
-		xt.CopyBlobContent(moduleName, moduleSource, version, directory)
+		xt.CopyBlobContent(moduleName, moduleSource, moduleVersion, directory)
 	case xt.IsLocalSourceAddr(moduleSource):
 		xt.CopyFile(moduleName, moduleSource, directory)
 	case xt.IsRegistrySourceAddr(moduleSource):

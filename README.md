@@ -1,4 +1,27 @@
-# XTerrafile [![Build Status](https://circleci.com/gh/devopsmakers/xterrafile.svg?style=shield)](https://circleci.com/gh/devopsmakers/xterrafile) [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fdevopsmakers%2Fxterrafile.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fdevopsmakers%2Fxterrafile?ref=badge_shield) [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org)
+# XTerrafile
+
+***
+
+**Note:** This is a fork from the original `xterrafile` implementation, but with additional support for azure blob store downloads. This code is highly experimental. Please refer to the original `xterrafile` implementation for stable releases.
+
+Example usage:
+```
+my-awesome-iaclib:
+  source: "https://whateverblobname.blob.core.windows.net/my-awesome-iaclib"
+  version: "0.0.74"
+```
+
+Additional environment variables need to be present to access the blob store:
+
+```
+export STORAGE_ACCOUNT_SUBSCRIPTION_ID="..."
+export STORAGE_ACCOUNT_RESOURCE_GROUP="..."
+export STORAGE_ACCOUNT_NAME="..."
+```
+
+... and you need to be logged in via `az login`.
+
+***
 
 `xterrafile` is a binary written in Go to manage external modules from various sources for use with (but not limited to) Terraform. See this [article](http://bensnape.com/2016/01/14/terraform-design-patterns-the-terrafile/) for more information on how it was introduced in a Ruby rake task.
 

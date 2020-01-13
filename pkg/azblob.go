@@ -83,9 +83,9 @@ var sharedCredential *azblob.SharedKeyCredential
 
 func loadCredentials() *azblob.SharedKeyCredential {
 	if sharedCredential == nil {
-		subscriptionId := os.Getenv("STORAGE_ACCOUNT_SUBSCRIPTION_ID")
-		resourceGroupName := os.Getenv("STORAGE_ACCOUNT_RESOURCE_GROUP")
-		storageAccountName := os.Getenv("STORAGE_ACCOUNT_NAME")
+		subscriptionId     := os.Getenv("TERRAFORM_MODULES_STORAGE_ACCOUNT_SUBSCRIPTION_ID")
+		resourceGroupName  := os.Getenv("TERRAFORM_MODULES_STORAGE_ACCOUNT_RESOURCE_GROUP")
+		storageAccountName := os.Getenv("TERRAFORM_MODULES_STORAGE_ACCOUNT_NAME")
 		var accountKey = ""
 
 		storageAccountsClient := getStorageAccountsClient(subscriptionId)

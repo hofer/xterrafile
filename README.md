@@ -14,9 +14,9 @@ my-awesome-iaclib:
 Additional environment variables need to be present to access the blob store:
 
 ```
-export STORAGE_ACCOUNT_SUBSCRIPTION_ID="..."
-export STORAGE_ACCOUNT_RESOURCE_GROUP="..."
-export STORAGE_ACCOUNT_NAME="..."
+export TERRAFORM_MODULES_STORAGE_ACCOUNT_SUBSCRIPTION_ID="..."
+export TERRAFORM_MODULES_STORAGE_ACCOUNT_RESOURCE_GROUP="..."
+export TERRAFORM_MODULES_STORAGE_ACCOUNT_NAME="..."
 ```
 
 ... and you need to be logged in via `az login`.

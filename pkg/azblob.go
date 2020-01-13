@@ -25,7 +25,7 @@ func CopyBlobContent(name string, source string, version string, directory strin
 }
 
 func DownloadBlob(name string, source string, version string, targetDir string) {
-	downloadUrl := source + "/" + name + "_" + version + ".tar"
+	downloadUrl := source + "/" + name + "_" + version + ".tgz"
 	p := azblob.NewPipeline(loadCredentials(), azblob.PipelineOptions{})
 
 	ctx := context.Background()

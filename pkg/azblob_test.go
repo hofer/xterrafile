@@ -6,7 +6,7 @@ import (
 )
 
 func TestLoadCredentials(t *testing.T) {
-	client := getStorageAccountsClient(true, "123")
+	client := getStorageAccountsClient(AzureConfig{UseMsi:true, SubscriptionId:"123"})
 	assert.True(t, client.SubscriptionID == "123")
 }
 

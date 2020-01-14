@@ -117,7 +117,7 @@ func loadCredentials() *azblob.SharedKeyCredential {
 			log.Fatal("Unable to load environment variables needed. Error: " + err.Error())
 		}
 
-		storageAccountsClient := getStorageAccountsClient(config.UseMsi, config.SubscriptionId)
+		storageAccountsClient := getStorageAccountsClient(config)
 
 		keys, err := storageAccountsClient.ListKeys(context.Background(), config.ResourceGroupName, config.StorageAccountName)
 		if err != nil || len(*keys.Keys) ==0 {
@@ -134,7 +134,7 @@ func loadCredentials() *azblob.SharedKeyCredential {
 	return sharedCredential
 }
 
-func getCliStorageAccountsClient(subscriptionId string)  autorest.Authorizer {
+func getCliAuthorizer()  autorest.Authorizer {
 	authorizer, err := auth.NewAuthorizerFromCLI()
 	if err != nil {
 		log.Fatal("No authorization via CLI: " + err.Error())
@@ -150,15 +150,15 @@ func getMsiAuthorizer()  autorest.Authorizer {
 	return authorizer
 }
 
-func getStorageAccountsClient(useMsi bool, subscriptionId string) storage.AccountsClient {
+func getStorageAccountsClient(config AzureConfig) storage.AccountsClient {
 	var authorizer autorest.Authorizer
-	if useMsi == true {
+	if config.UseMsi == true {
 		authorizer = getMsiAuthorizer()
 	} else {
-		authorizer = getCliStorageAccountsClient(subscriptionId)
+		authorizer = getCliAuthorizer()
 	}
 
-	storageAccountsClient := storage.NewAccountsClient(subscriptionId)
+	storageAccountsClient := storage.NewAccountsClient(config.SubscriptionId)
 	storageAccountsClient.Authorizer = authorizer
 	storageAccountsClient.AddToUserAgent("xterrafile")
 	return storageAccountsClient

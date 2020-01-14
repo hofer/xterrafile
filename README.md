@@ -21,6 +21,9 @@ export TERRAFORM_MODULES_STORAGE_ACCOUNT_NAME="..."
 
 ... and you need to be logged in via `az login`.
 
+This version also looks at the `ARM_USE_MSI` environment variable. If `ARM_USE_MSI` is set to true, then
+`xterrafile` tries to use an existing MSI.
+
 ***
 
 `xterrafile` is a binary written in Go to manage external modules from various sources for use with (but not limited to) Terraform. See this [article](http://bensnape.com/2016/01/14/terraform-design-patterns-the-terrafile/) for more information on how it was introduced in a Ruby rake task.

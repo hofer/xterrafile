@@ -10,3 +10,7 @@ func TestLoadCredentials(t *testing.T) {
 	assert.True(t, client.SubscriptionID == "123")
 }
 
+func TestLoadConfig(t *testing.T) {
+	_, err := loadAzureConfig()
+	assert.True(t, err != nil)
+}

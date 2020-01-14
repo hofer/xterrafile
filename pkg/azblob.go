@@ -4,6 +4,7 @@ import (
 	"archive/tar"
 	"compress/gzip"
 	"context"
+	"errors"
 	"fmt"
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2017-06-01/storage"
 	"github.com/Azure/azure-storage-blob-go/azblob"
@@ -83,22 +84,48 @@ func untar(tarReader *tar.Reader, target string) error {
 
 var sharedCredential *azblob.SharedKeyCredential
 
+type AzureConfig struct {
+	SubscriptionId string
+	ResourceGroupName string
+	StorageAccountName string
+	UseMsi bool
+}
+
+func loadAzureConfig() (AzureConfig, error) {
+	config := AzureConfig{
+		SubscriptionId: os.Getenv("TERRAFORM_MODULES_STORAGE_ACCOUNT_SUBSCRIPTION_ID"),
+		ResourceGroupName: os.Getenv("TERRAFORM_MODULES_STORAGE_ACCOUNT_RESOURCE_GROUP"),
+		StorageAccountName: os.Getenv("TERRAFORM_MODULES_STORAGE_ACCOUNT_NAME"),
+		UseMsi: GetBool(os.Getenv("ARM_USE_MSI")),
+	}
+
+	if config.ResourceGroupName == "" {
+		return config, errors.New("Environment variable TERRAFORM_MODULES_STORAGE_ACCOUNT_RESOURCE_GROUP empty or not set.")
+	}
+
+	if config.StorageAccountName == "" {
+		return config, errors.New("Environment variable TERRAFORM_MODULES_STORAGE_ACCOUNT_NAME empty or not set.")
+	}
+
+	return config, nil
+}
+
 func loadCredentials() *azblob.SharedKeyCredential {
 	if sharedCredential == nil {
-		subscriptionId     := os.Getenv("TERRAFORM_MODULES_STORAGE_ACCOUNT_SUBSCRIPTION_ID")
-		resourceGroupName  := os.Getenv("TERRAFORM_MODULES_STORAGE_ACCOUNT_RESOURCE_GROUP")
-		storageAccountName := os.Getenv("TERRAFORM_MODULES_STORAGE_ACCOUNT_NAME")
-		useMsi             := GetBool(os.Getenv("ARM_USE_MSI"))
+		config, err := loadAzureConfig()
+		if err != nil {
+			log.Fatal("Unable to load environment variables needed. Error: " + err.Error())
+		}
 
-		storageAccountsClient := getStorageAccountsClient(useMsi, subscriptionId)
+		storageAccountsClient := getStorageAccountsClient(config.UseMsi, config.SubscriptionId)
 
-		keys, err := storageAccountsClient.ListKeys(context.Background(), resourceGroupName, storageAccountName)
+		keys, err := storageAccountsClient.ListKeys(context.Background(), config.ResourceGroupName, config.StorageAccountName)
 		if err != nil || len(*keys.Keys) ==0 {
 			log.Fatal("Unable to read storage account access keys. Error: " + err.Error())
 		}
 
 		key := (*keys.Keys)[0]
-		credential, err := azblob.NewSharedKeyCredential(storageAccountName, *key.Value)
+		credential, err := azblob.NewSharedKeyCredential(config.StorageAccountName, *key.Value)
 		if err != nil {
 			log.Fatal("Invalid credentials with error: " + err.Error())
 		}
@@ -115,7 +142,7 @@ func getCliStorageAccountsClient(subscriptionId string)  autorest.Authorizer {
 	return authorizer
 }
 
-func getMsiAuthorizer(subscriptionId string)  autorest.Authorizer {
+func getMsiAuthorizer()  autorest.Authorizer {
 	authorizer, err := auth.NewMSIConfig().Authorizer()
 	if err != nil {
 		log.Fatal("No authorization via MSI: " + err.Error())
@@ -126,7 +153,7 @@ func getMsiAuthorizer(subscriptionId string)  autorest.Authorizer {
 func getStorageAccountsClient(useMsi bool, subscriptionId string) storage.AccountsClient {
 	var authorizer autorest.Authorizer
 	if useMsi == true {
-		authorizer = getMsiAuthorizer(subscriptionId)
+		authorizer = getMsiAuthorizer()
 	} else {
 		authorizer = getCliStorageAccountsClient(subscriptionId)
 	}

@@ -4,16 +4,18 @@ import (
 	"archive/tar"
 	"compress/gzip"
 	"context"
+	"fmt"
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2017-06-01/storage"
 	"github.com/Azure/azure-storage-blob-go/azblob"
+	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"io"
 	"log"
 	"net/url"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
-	"fmt"
 )
 
 func IsAzBlobAStorageUrl(addr string) bool {
@@ -86,18 +88,17 @@ func loadCredentials() *azblob.SharedKeyCredential {
 		subscriptionId     := os.Getenv("TERRAFORM_MODULES_STORAGE_ACCOUNT_SUBSCRIPTION_ID")
 		resourceGroupName  := os.Getenv("TERRAFORM_MODULES_STORAGE_ACCOUNT_RESOURCE_GROUP")
 		storageAccountName := os.Getenv("TERRAFORM_MODULES_STORAGE_ACCOUNT_NAME")
-		var accountKey = ""
+		useMsi             := GetBool(os.Getenv("ARM_USE_MSI"))
 
-		storageAccountsClient := getStorageAccountsClient(subscriptionId)
+		storageAccountsClient := getStorageAccountsClient(useMsi, subscriptionId)
+
 		keys, err := storageAccountsClient.ListKeys(context.Background(), resourceGroupName, storageAccountName)
 		if err != nil || len(*keys.Keys) ==0 {
 			log.Fatal("Unable to read storage account access keys. Error: " + err.Error())
 		}
 
 		key := (*keys.Keys)[0]
-		accountKey = *key.Value
-
-		credential, err := azblob.NewSharedKeyCredential(storageAccountName, accountKey)
+		credential, err := azblob.NewSharedKeyCredential(storageAccountName, *key.Value)
 		if err != nil {
 			log.Fatal("Invalid credentials with error: " + err.Error())
 		}
@@ -106,13 +107,40 @@ func loadCredentials() *azblob.SharedKeyCredential {
 	return sharedCredential
 }
 
-func getStorageAccountsClient(subscriptionId string) storage.AccountsClient {
-	storageAccountsClient := storage.NewAccountsClient(subscriptionId)
+func getCliStorageAccountsClient(subscriptionId string)  autorest.Authorizer {
 	authorizer, err := auth.NewAuthorizerFromCLI()
 	if err != nil {
 		log.Fatal("No authorization via CLI: " + err.Error())
 	}
+	return authorizer
+}
+
+func getMsiAuthorizer(subscriptionId string)  autorest.Authorizer {
+	authorizer, err := auth.NewMSIConfig().Authorizer()
+	if err != nil {
+		log.Fatal("No authorization via MSI: " + err.Error())
+	}
+	return authorizer
+}
+
+func getStorageAccountsClient(useMsi bool, subscriptionId string) storage.AccountsClient {
+	var authorizer autorest.Authorizer
+	if useMsi == true {
+		authorizer = getMsiAuthorizer(subscriptionId)
+	} else {
+		authorizer = getCliStorageAccountsClient(subscriptionId)
+	}
+
+	storageAccountsClient := storage.NewAccountsClient(subscriptionId)
 	storageAccountsClient.Authorizer = authorizer
 	storageAccountsClient.AddToUserAgent("xterrafile")
 	return storageAccountsClient
+}
+
+func GetBool(value string) bool {
+	i, err := strconv.ParseBool(value)
+	if nil != err {
+		return false
+	}
+	return i
 }

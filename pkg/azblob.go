@@ -153,8 +153,10 @@ func getMsiAuthorizer()  autorest.Authorizer {
 func getStorageAccountsClient(config AzureConfig) storage.AccountsClient {
 	var authorizer autorest.Authorizer
 	if config.UseMsi == true {
+		log.Println("Using MSI Authorization...")
 		authorizer = getMsiAuthorizer()
 	} else {
+		log.Println("Using Cli Authorization...")
 		authorizer = getCliAuthorizer()
 	}
 
